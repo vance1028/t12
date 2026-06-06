@@ -129,18 +129,17 @@ const Feedbacks: React.FC = () => {
     if (values.buildId) formData.append('buildId', values.buildId);
     formData.append('tags', JSON.stringify(values.tags || []));
     
-    if (values.attachments) {
-      values.attachments.forEach((file: any, index: number) => {
+    const attachments = values.attachments?.fileList || values.attachments;
+    if (Array.isArray(attachments) && attachments.length > 0) {
+      attachments.forEach((file: any) => {
         if (file.originFileObj) {
-          formData.append(`attachments`, file.originFileObj);
+          formData.append('attachments', file.originFileObj);
         }
       });
     }
 
     try {
-      await api.post('/feedbacks', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      await api.post('/feedbacks', formData);
       message.success('反馈提交成功');
       setModalVisible(false);
       form.resetFields();

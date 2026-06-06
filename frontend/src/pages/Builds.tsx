@@ -112,14 +112,15 @@ const Builds: React.FC = () => {
     formData.append('changelog', values.changelog);
     formData.append('isForceUpdate', values.isForceUpdate ? 'true' : 'false');
     formData.append('testGroupIds', JSON.stringify(values.testGroupIds));
-    if (values.build && values.build[0]) {
-      formData.append('build', values.build[0].originFileObj);
+    if (values.build && values.build.fileList && values.build.fileList[0]) {
+      const file = values.build.fileList[0];
+      if (file.originFileObj) {
+        formData.append('build', file.originFileObj);
+      }
     }
 
     try {
-      await api.post('/builds', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      await api.post('/builds', formData);
       message.success('版本发布成功');
       setModalVisible(false);
       form.resetFields();

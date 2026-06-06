@@ -95,6 +95,7 @@ const TestGroups: React.FC = () => {
       setUserModalVisible(false);
       userForm.resetFields();
       fetchGroupDetail(selectedGroup.id);
+      fetchTestGroups();
     } catch (error) {
       message.error('添加用户失败');
     }
@@ -105,6 +106,7 @@ const TestGroups: React.FC = () => {
       await api.delete(`/test-groups/${groupId}/users/${userId}`);
       message.success('用户已移除');
       fetchGroupDetail(groupId);
+      fetchTestGroups();
     } catch (error) {
       message.error('移除用户失败');
     }
