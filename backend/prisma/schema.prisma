@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TESTER
+}
+
+enum FeedbackType {
+  BUG
+  BALANCE
+  SUGGESTION
+}
+
+enum Severity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum FeedbackStatus {
+  NEW
+  CONFIRMED
+  IN_PROGRESS
+  PENDING_VERIFICATION
+  CLOSED
+}
+
+enum Platform {
+  WINDOWS
+  MACOS
+  LINUX
+  ANDROID
+  IOS
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  username     String         @unique
+  passwordHash String
+  email        String?
+  role         Role           @default(TESTER)
+  createdAt    DateTime       @default(now())
+  testGroups   UserTestGroup[]
+  feedbacks    Feedback[]     @relation("FeedbackAuthor")
+  downloads    Download[]
+}
+
+model TestGroup {
+  id          Int            @id @default(autoincrement())
+  name        String         @unique
+  description String?
+  createdAt   DateTime       @default(now())
+  users       UserTestGroup[]
+  builds      BuildTestGroup[]
+}
+
+model UserTestGroup {
+  userId      Int
+  testGroupId Int
+  assignedAt  DateTime  @default(now())
+  assignedBy  Int?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testGroup   TestGroup @relation(fields: [testGroupId], references: [id], onDelete: Cascade)
+
+  @@id([userId, testGroupId])
+}
+
+model Build {
+  id            Int              @id @default(autoincrement())
+  version       String
+  platform      Platform
+  changelog     String
+  isForceUpdate Boolean          @default(false)
+  filePath      String
+  fileName      String
+  fileSize      Int
+  uploadedBy    Int
+  uploadedAt    DateTime         @default(now())
+  testGroups    BuildTestGroup[]
+  downloads     Download[]
+  feedbacks     Feedback[]
+}
+
+model BuildTestGroup {
+  buildId     Int
+  testGroupId Int
+  assignedAt  DateTime  @default(now())
+  build       Build     @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  testGroup   TestGroup @relation(fields: [testGroupId], references: [id], onDelete: Cascade)
+
+  @@id([buildId, testGroupId])
+}
+
+model Download {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  buildId   Int
+  downloadedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  build     Build    @relation(fields: [buildId], references: [id], onDelete: Cascade)
+}
+
+model Feedback {
+  id              Int                  @id @default(autoincrement())
+  type            FeedbackType
+  severity        Severity
+  status          FeedbackStatus       @default(NEW)
+  title           String
+  description     String
+  levelScene      String?
+  buildId         Int?
+  authorId        Int
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  verifiedBuildId Int?
+  tags            String[]
+  author          User                 @relation("FeedbackAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  build           Build?               @relation(fields: [buildId], references: [id], onDelete: SetNull)
+  verifiedBuild   Build?               @relation("VerifiedFeedback", fields: [verifiedBuildId], references: [id], onDelete: SetNull)
+  attachments     FeedbackAttachment[]
+  statusHistory   FeedbackStatusHistory[]
+}
+
+model FeedbackAttachment {
+  id         Int      @id @default(autoincrement())
+  feedbackId Int
+  fileName   String
+  filePath   String
+  fileType   String
+  fileSize   Int
+  uploadedAt DateTime @default(now())
+  feedback   Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+}
+
+model FeedbackStatusHistory {
+  id         Int            @id @default(autoincrement())
+  feedbackId Int
+  oldStatus  FeedbackStatus?
+  newStatus  FeedbackStatus
+  changedBy  Int?
+  changedAt  DateTime       @default(now())
+  comment    String?
+  feedback   Feedback       @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+}
