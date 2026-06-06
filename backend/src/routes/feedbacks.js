@@ -2,7 +2,8 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { prisma, UPLOAD_DIR } = require('../server');
+const { prisma } = require('../prisma');
+const { UPLOAD_DIR } = require('../config');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();

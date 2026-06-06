@@ -3,9 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
+const { prisma } = require('./prisma');
 
 const authRoutes = require('./routes/auth');
 const buildRoutes = require('./routes/builds');
@@ -13,9 +11,10 @@ const feedbackRoutes = require('./routes/feedbacks');
 const statsRoutes = require('./routes/stats');
 const testGroupRoutes = require('./routes/testGroups');
 
+const { UPLOAD_DIR } = require('./config');
+
 const app = express();
 const PORT = process.env.PORT || 6371;
-const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, '..', 'uploads');
 
 if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -51,4 +50,4 @@ async function startServer() {
 
 startServer();
 
-module.exports = { prisma, UPLOAD_DIR, app };
+module.exports = { UPLOAD_DIR, app };

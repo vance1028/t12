@@ -74,19 +74,20 @@ model UserTestGroup {
 }
 
 model Build {
-  id            Int              @id @default(autoincrement())
-  version       String
-  platform      Platform
-  changelog     String
-  isForceUpdate Boolean          @default(false)
-  filePath      String
-  fileName      String
-  fileSize      Int
-  uploadedBy    Int
-  uploadedAt    DateTime         @default(now())
-  testGroups    BuildTestGroup[]
-  downloads     Download[]
-  feedbacks     Feedback[]
+  id                Int                  @id @default(autoincrement())
+  version           String
+  platform          Platform
+  changelog         String
+  isForceUpdate     Boolean              @default(false)
+  filePath          String
+  fileName          String
+  fileSize          Int
+  uploadedBy        Int
+  uploadedAt        DateTime             @default(now())
+  testGroups        BuildTestGroup[]
+  downloads         Download[]
+  feedbacks         Feedback[]           @relation("BuildFeedback")
+  verifiedFeedbacks Feedback[]           @relation("VerifiedFeedback")
 }
 
 model BuildTestGroup {
@@ -123,7 +124,7 @@ model Feedback {
   verifiedBuildId Int?
   tags            String[]
   author          User                 @relation("FeedbackAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  build           Build?               @relation(fields: [buildId], references: [id], onDelete: SetNull)
+  build           Build?               @relation("BuildFeedback", fields: [buildId], references: [id], onDelete: SetNull)
   verifiedBuild   Build?               @relation("VerifiedFeedback", fields: [verifiedBuildId], references: [id], onDelete: SetNull)
   attachments     FeedbackAttachment[]
   statusHistory   FeedbackStatusHistory[]

@@ -8,14 +8,11 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-FROM node:18-alpine
+FROM nginx:alpine
 
-WORKDIR /app
-
-COPY --from=builder /app/dist ./dist
-COPY package*.json ./
-RUN npm install --only=production && npm install -g serve
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 5261
 
-CMD ["serve", "-s", "dist", "-l", "5261"]
+CMD ["nginx", "-g", "daemon off;"]

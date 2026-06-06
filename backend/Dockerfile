@@ -1,6 +1,8 @@
-FROM node:18-alpine
+FROM node:18-slim
 
 WORKDIR /app
+
+RUN apt-get update -y && apt-get install -y openssl
 
 COPY package*.json ./
 
@@ -14,4 +16,4 @@ COPY . .
 
 EXPOSE 6371
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node src/seed.js && node src/server.js"]
+CMD ["sh", "-c", "npx prisma db push && node src/seed.js && node src/server.js"]
